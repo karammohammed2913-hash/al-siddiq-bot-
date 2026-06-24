@@ -10,34 +10,58 @@ from telegram.ext import (
 import yt_dlp
 import os
 import uuid
+import json
 
-TOKEN = "8997713378:AAE_25VY8NWL59Oe_Mish_MYVzOVCDPExFk"
+TOKEN = "8997713378:AAH4tL_oeKXT3r4O1rFuhjEp9q9uxi3He3I"
+
+USERS_FILE = "users.json"
+
+
+def load_users():
+    try:
+        with open(USERS_FILE, "r") as f:
+            return set(json.load(f))
+    except:
+        return set()
+
+
+def save_users(users):
+    with open(USERS_FILE, "w") as f:
+        json.dump(list(users), f)
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+
+    users = load_users()
+    users.add(user_id)
+    save_users(users)
+
     await update.message.reply_text(
-        "👋 أهلاً بيك في بوت الصدّيق\n\n"
-        "📥 ابعت لينك TikTok أو YouTube أو Instagram"
+        f"👋 أهلاً بك في بوت الصدّيق\n\n"
+        f"📥 أرسل رابط TikTok أو YouTube أو Instagram\n\n"
+        f"🤍 استخدم البوت فيما يرضي الله\n\n"
+        f"👥 عدد مستخدمي البوت: {len(users)}"
     )
 
 
 async def download_video(update: Update, context: ContextTypes.DEFAULT_TYPE):
     url = update.message.text
 
-    await update.message.reply_text("⏳ جاري التحميل...")
+    await update.message.reply_text("⏳ جاري تحميل الفيديو...")
 
     unique_name = str(uuid.uuid4())
 
     ydl_opts = {
-        'format': 'best',
-        'outtmpl': unique_name + '.%(ext)s'
+        "format": "best",
+        "outtmpl": unique_name + ".%(ext)s"
     }
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=True)
 
-            ext = info['ext']
+            ext = info["ext"]
             filename = f"{unique_name}.{ext}"
 
         with open(filename, "rb") as video:
@@ -46,8 +70,10 @@ async def download_video(update: Update, context: ContextTypes.DEFAULT_TYPE):
         os.remove(filename)
 
     except Exception as e:
-        print(e)
-        await update.message.reply_text("❌ حدث خطأ أثناء التحميل")
+        print("ERROR:", e)
+        await update.message.reply_text(
+            "❌ حدث خطأ أثناء التحميل.\nتأكد من صحة الرابط ثم حاول مرة أخرى."
+        )
 
 
 app = ApplicationBuilder().token(TOKEN).build()
