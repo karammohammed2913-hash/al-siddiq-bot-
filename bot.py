@@ -11,7 +11,7 @@ import yt_dlp
 import os
 import uuid
 
-TOKEN = "8997713378:AAE_25VY8NWL59Oe_Mish_MYVzOVCDPExFk"
+TOKEN = "8997713378:AAH4tL_oeKXT3r4O1rFuhjEp9q9uxi3He3I"
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
