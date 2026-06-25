@@ -1,40 +1,69 @@
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update
 from telegram.ext import (
-ApplicationBuilder,
-CommandHandler,
-MessageHandler,
-CallbackQueryHandler,
-ContextTypes,
-filters
+    ApplicationBuilder,
+    CommandHandler,
+    MessageHandler,
+    ContextTypes,
+    filters
 )
 
 import yt_dlp
 import os
 import uuid
-import json
 
-TOKEN = "8997713378:AAH4tL_oeKXT3r4O1rFuhjEp9q9uxi3He3I"
+TOKEN = "8997713378:AAE_25VY8NWL59Oe_Mish_MYVzOVCDPExFk"
 
-USERS_FILE = "users.json"
-
-user_links = {}
-
-def load_users():
-try:
-with open(USERS_FILE, "r") as f:
-return set(json.load(f))
-except:
-return set()
-
-def save_users(users):
-with open(USERS_FILE, "w") as f:
-json.dump(list(users), f)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-user_id = update.effective_user.id
+    await update.message.reply_text(
+        "👋 أهلاً بيك في بوت الصدّيق\n\n"
+        "📥 ابعت لينك TikTok أو YouTube أو Instagram"
+    )
 
-users = load_users()
-users.add(user_id)
+
+async def download_video(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    url = update.message.text
+
+    await update.message.reply_text("⏳ جاري التحميل...")
+
+    unique_name = str(uuid.uuid4())
+
+    ydl_opts = {
+        'format': 'best',
+        'outtmpl': unique_name + '.%(ext)s'
+    }
+
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=True)
+
+            ext = info['ext']
+            filename = f"{unique_name}.{ext}"
+
+        with open(filename, "rb") as video:
+            await update.message.reply_video(video)
+
+        os.remove(filename)
+
+    except Exception as e:
+        print(e)
+        await update.message.reply_text("❌ حدث خطأ أثناء التحميل")
+
+
+app = ApplicationBuilder().token(TOKEN).build()
+
+app.add_handler(CommandHandler("start", start))
+
+app.add_handler(
+    MessageHandler(
+        filters.TEXT & ~filters.COMMAND,
+        download_video
+    )
+)
+
+print("Bot is running...")
+
+app.run_polling(drop_pending_updates=True)users.add(user_id)
 save_users(users)
 
 await update.message.reply_text(
