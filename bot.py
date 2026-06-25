@@ -12,7 +12,7 @@ import os
 import uuid
 import json
 
-TOKEN = "ضع_التوكن_الجديد_هنا"
+TOKEN = "8997713378:AAH4tL_oeKXT3r4O1rFuhjEp9q9uxi3He3I"
 
 USERS_FILE = "users.json"
 
