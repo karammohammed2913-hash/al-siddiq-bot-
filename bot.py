@@ -13,19 +13,20 @@ import uuid
 import json
 
 TOKEN = "8997713378:AAH4tL_oeKXT3r4O1rFuhjEp9q9uxi3He3I"
+
 USERS_FILE = "users.json"
 
 
 def load_users():
     try:
-        with open(USERS_FILE, "r", encoding="utf-8") as f:
+        with open(USERS_FILE, "r") as f:
             return set(json.load(f))
     except:
         return set()
 
 
 def save_users(users):
-    with open(USERS_FILE, "w", encoding="utf-8") as f:
+    with open(USERS_FILE, "w") as f:
         json.dump(list(users), f)
 
 
@@ -38,86 +39,55 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text(
         f"👋 أهلاً بك في بوت الصدّيق\n\n"
-        f"📥 أرسل رابط فيديو من:\n"
-        f"• YouTube\n"
-        f"• YouTube Shorts\n"
-        f"• TikTok\n"
-        f"• Instagram\n"
+        f"📥 أرسل رابط TikTok أو YouTube أو Instagram\n\n"
         f"• Facebook\n\n"
-        f"👥 عدد المستخدمين: {len(users)}"
+        f"🤍 استخدم البوت فيما يرضي الله\n\n"
+        f"👥 عدد مستخدمي البوت: {len(users)}"
     )
 
 
 async def download_video(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    url = update.message.text.strip()
+    url = update.message.text
 
-    await update.message.reply_text("⏳ جاري التحميل...")
+    await update.message.reply_text("⏳ جاري تحميل الفيديو...")
 
     unique_name = str(uuid.uuid4())
 
     ydl_opts = {
-        "format": "bestvideo+bestaudio/best",
-        "merge_output_format": "mp4",
-        "outtmpl": unique_name + ".%(ext)s",
-        "noplaylist": True,
-        "quiet": True
+        "format": "best",
+        "outtmpl": unique_name + ".%(ext)s"
     }
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=True)
 
-            requested_file = ydl.prepare_filename(info)
+            ext = info["ext"]
+            filename = f"{unique_name}.{ext}"
 
-            if not os.path.exists(requested_file):
-                base = os.path.splitext(requested_file)[0]
-                requested_file = base + ".mp4"
+        with open(filename, "rb") as video:
+            await update.message.reply_video(video)
 
-        file_size = os.path.getsize(requested_file)
-
-        with open(requested_file, "rb") as media:
-
-            if file_size < 49 * 1024 * 1024:
-                await update.message.reply_video(
-                    media,
-                    caption="✅ تم التحميل بنجاح"
-                )
-            else:
-                await update.message.reply_document(
-                    media,
-                    caption="✅ تم التحميل بنجاح"
-                )
-
-        os.remove(requested_file)
+        os.remove(filename)
 
     except Exception as e:
         print("ERROR:", e)
-
         await update.message.reply_text(
-            "❌ فشل تحميل الفيديو.\n"
-            "تأكد أن الرابط صحيح ومتاح للعامة."
+            "❌ حدث خطأ أثناء التحميل.\nتأكد من صحة الرابط ثم حاول مرة أخرى."
         )
 
 
-def main():
-    if not TOKEN:
-        raise ValueError("BOT_TOKEN environment variable not found")
+app = ApplicationBuilder().token(TOKEN).build()
 
-    app = ApplicationBuilder().token(TOKEN).build()
+app.add_handler(CommandHandler("start", start))
 
-    app.add_handler(CommandHandler("start", start))
-
-    app.add_handler(
-        MessageHandler(
-            filters.TEXT & ~filters.COMMAND,
-            download_video
-        )
+app.add_handler(
+    MessageHandler(
+        filters.TEXT & ~filters.COMMAND,
+        download_video
     )
+)
 
-    print("Bot is running...")
+print("Bot is running...")
 
-    app.run_polling(drop_pending_updates=True)
-
-
-if __name__ == "__main__":
-    main()
+app.run_polling(drop_pending_updates=True)
