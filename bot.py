@@ -12,8 +12,7 @@ import os
 import uuid
 import json
 
-TOKEN = os.getenv("8997713378:AAH4tL_oeKXT3r4O1rFuhjEp9q9uxi3He3I")
-
+TOKEN = "8997713378:AAH4tL_oeKXT3r4O1rFuhjEp9q9uxi3He3I"
 USERS_FILE = "users.json"
 
 
