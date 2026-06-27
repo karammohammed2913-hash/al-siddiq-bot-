@@ -60,22 +60,24 @@ async def download_video(update: Update, context: ContextTypes.DEFAULT_TYPE):
     }
 
     try:
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(url, download=True)
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        info = ydl.extract_info(url, download=True)
 
-            ext = info["ext"]
-            filename = f"{unique_name}.{ext}"
+        filename = ydl.prepare_filename(info)
 
-        with open(filename, "rb") as video:
-            await update.message.reply_video(video)
+        if not os.path.exists(filename):
+            base = os.path.splitext(filename)[0]
+            if os.path.exists(base + ".mp4"):
+                filename = base + ".mp4"
 
-        os.remove(filename)
+    with open(filename, "rb") as video:
+        await update.message.reply_video(video)
 
-    except Exception as e:
-        print("ERROR:", e)
-        await update.message.reply_text(
-            "❌ حدث خطأ أثناء التحميل.\nتأكد من صحة الرابط ثم حاول مرة أخرى."
-        )
+    os.remove(filename)
+
+except Exception as e:
+    print("ERROR:", e)
+    await update.message.reply_text("❌ حدث خطأ أثناء التحميل.")
 
 
 app = ApplicationBuilder().token(TOKEN).build()
