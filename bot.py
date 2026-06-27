@@ -41,6 +41,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"👋 أهلاً بك في بوت الصدّيق\n\n"
         f"📥 أرسل رابط TikTok أو YouTube أو Instagram\n\n"
         f"• Facebook\n\n"
+        f"𝕏 X (Twitter)\n\n"
         f"🤍 استخدم البوت فيما يرضي الله\n\n"
         f"👥 عدد مستخدمي البوت: {len(users)}"
     )
