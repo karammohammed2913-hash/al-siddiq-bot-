@@ -12,7 +12,7 @@ import os
 import uuid
 import json
 
-TOKEN = "8997713378:AAH4tL_oeKXT3r4O1rFuhjEp9q9uxi3He3I"
+TOKEN = "8997713378:AAEUGjodMRIciF1Ap9J0avwGVvlIartFYug"
 
 USERS_FILE = "users.json"
 
